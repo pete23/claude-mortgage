@@ -140,6 +140,18 @@ input[type="number"]:focus {
   top: 0;
 }
 
+/* Right-align numeric column headers */
+.mortgage-table th:nth-child(2),  /* Initial Rate */
+.mortgage-table th:nth-child(3),  /* Period */
+.mortgage-table th:nth-child(4),  /* Term */
+.mortgage-table th:nth-child(5),  /* Arrangement Fee */
+.mortgage-table th:nth-child(6),  /* Total Mortgage */
+.mortgage-table th:nth-child(7),  /* LTV */
+.mortgage-table th:nth-child(8),  /* Monthly Payment */
+.mortgage-table th:nth-child(9) { /* Cash in Hand */
+  text-align: right;
+}
+
 .mortgage-table th:hover {
   background-color: var(--highlight-color);
   cursor: pointer;
@@ -148,6 +160,18 @@ input[type="number"]:focus {
 .mortgage-table td {
   padding: 12px;
   border-bottom: 1px solid var(--border-color);
+}
+
+/* Right-align numeric cells */
+.mortgage-table td:nth-child(2),  /* Initial Rate */
+.mortgage-table td:nth-child(3),  /* Period */
+.mortgage-table td:nth-child(4),  /* Term */
+.mortgage-table td:nth-child(5),  /* Arrangement Fee */
+.mortgage-table td:nth-child(6),  /* Total Mortgage */
+.mortgage-table td:nth-child(7),  /* LTV */
+.mortgage-table td:nth-child(8),  /* Monthly Payment */
+.mortgage-table td:nth-child(9) { /* Cash in Hand */
+  text-align: right;
 }
 
 .mortgage-table tr:last-child td {
