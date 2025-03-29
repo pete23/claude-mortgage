@@ -237,6 +237,21 @@ input[type="number"]:focus {
   background-color: #d0d0d0;
 }
 
+/* Required and optional field indicators */
+.required {
+  color: #D32F2F;
+  font-weight: bold;
+  margin-left: 5px;
+}
+
+.optional {
+  color: #757575;
+  font-size: 0.85em;
+  font-style: italic;
+  font-weight: normal;
+  margin-left: 5px;
+}
+
 @media (max-width: 768px) {
   .form-group {
     min-width: 100%;

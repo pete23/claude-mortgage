@@ -101,8 +101,13 @@ document.addEventListener('DOMContentLoaded', () => {
     // Calculate loan to value ratio
     const loanToValueRatio = (requiredLoanAmount / buyingPrice) * 100;
     
+    // For first-time buyers, treat cash in hand as their deposit
+    // but ignore selling price, current mortgage, agent fee, etc.
+    const isFirstTimeBuyer = sellingPrice === 0 && currentMortgage === 0 && agentFeePercentage === 0;
+    
     // Check if we have enough data to calculate eligibility
-    const canCalculateEligibility = buyingPrice > 0 && sellingPrice > 0;
+    // We only need buying price - for first-time buyers who won't have a selling price
+    const canCalculateEligibility = buyingPrice > 0;
     
     // Process all mortgages with eligibility information
     const allMortgageDetails = mortgageRates.map(mortgage => {
@@ -265,7 +270,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // If we don't have enough data to calculate eligibility, show a message
     if (!canCalculateEligibility) {
-      html = '<div class="no-results">Enter selling and buying prices to see eligibility</div>' + html;
+      html = '<div class="no-results">Enter buying price to see mortgage eligibility</div>' + html;
     }
     
     resultsContainer.innerHTML = html;
