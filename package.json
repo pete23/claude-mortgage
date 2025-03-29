@@ -1,0 +1,24 @@
+{
+  "name": "claude-mortgage",
+  "version": "1.0.0",
+  "description": "A simple mortgage calculator for comparing mortgage options when moving houses.",
+  "main": "server.js",
+  "scripts": {
+    "test": "jest",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pete23/claude-mortgage.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/pete23/claude-mortgage/issues"
+  },
+  "homepage": "https://github.com/pete23/claude-mortgage#readme",
+  "devDependencies": {
+    "jest": "^29.7.0"
+  }
+}

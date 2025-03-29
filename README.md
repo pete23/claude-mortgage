@@ -40,6 +40,16 @@ node server.js
 
 Then open your browser and navigate to http://localhost:3000/
 
+### Running Tests
+
+The application uses Jest for unit testing. To run the tests:
+
+```bash
+npm test
+```
+
+This will run all test suites and display the results.
+
 ### Architecture
 
 - Single Page Application
