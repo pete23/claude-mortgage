@@ -57,12 +57,35 @@ function calculateLoanToValueRatio(requiredLoanAmount, buyingPrice) {
  * Calculate final cash in hand after the process
  * @param {number} cashAfterSelling - The cash available after selling
  * @param {number} buyingPrice - The buying price of the new property
- * @param {number} requiredLoanAmount - The required loan amount
+ * @param {number} actualLoanAmount - The actual loan amount based on the mortgage's LTV
  * @param {number} arrangementFee - The mortgage arrangement fee
  * @returns {number} The final cash in hand
  */
-function calculateFinalCashInHand(cashAfterSelling, buyingPrice, requiredLoanAmount, arrangementFee) {
-  return cashAfterSelling - buyingPrice + requiredLoanAmount - arrangementFee;
+function calculateFinalCashInHand(cashAfterSelling, buyingPrice, actualLoanAmount, arrangementFee) {
+  return cashAfterSelling - buyingPrice + actualLoanAmount - arrangementFee;
+}
+
+/**
+ * Calculate the actual loan amount based on the mortgage's max LTV
+ * @param {number} requiredLoanAmount - The loan amount required by the buyer
+ * @param {number} buyingPrice - The buying price of the new property
+ * @param {number} maxLoanToValue - The maximum loan-to-value ratio of the mortgage
+ * @param {number} maxLoanAmount - The maximum loan amount of the mortgage
+ * @param {number} minLoanAmount - The minimum loan amount of the mortgage
+ * @returns {number|null} The actual loan amount or null if below minimum
+ */
+function calculateActualLoanAmount(requiredLoanAmount, buyingPrice, maxLoanToValue, maxLoanAmount, minLoanAmount) {
+  const actualLoanAmount = Math.min(
+    requiredLoanAmount,
+    (buyingPrice * maxLoanToValue / 100),
+    maxLoanAmount
+  );
+  
+  if (actualLoanAmount < minLoanAmount) {
+    return null;
+  }
+  
+  return actualLoanAmount;
 }
 
 /**
@@ -87,5 +110,6 @@ module.exports = {
   calculateRequiredLoanAmount,
   calculateLoanToValueRatio,
   calculateFinalCashInHand,
+  calculateActualLoanAmount,
   isMortgageEligible
 };

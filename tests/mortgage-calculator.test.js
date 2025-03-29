@@ -4,6 +4,7 @@ const {
   calculateRequiredLoanAmount,
   calculateLoanToValueRatio,
   calculateFinalCashInHand,
+  calculateActualLoanAmount,
   isMortgageEligible
 } = require('../src/mortgage-calculator');
 
@@ -87,23 +88,72 @@ describe('calculateFinalCashInHand', () => {
   test('calculates the correct final cash in hand', () => {
     const cashAfterSelling = 161750;
     const buyingPrice = 450000;
-    const requiredLoanAmount = 288250;
+    const actualLoanAmount = 270000; // 60% LTV
     const arrangementFee = 999;
     
-    // Final cash in hand: 161750 - 450000 + 288250 - 999 = -999
-    const result = calculateFinalCashInHand(cashAfterSelling, buyingPrice, requiredLoanAmount, arrangementFee);
-    expect(result).toBe(-999);
+    // Final cash in hand: 161750 - 450000 + 270000 - 999 = -19249
+    const result = calculateFinalCashInHand(cashAfterSelling, buyingPrice, actualLoanAmount, arrangementFee);
+    expect(result).toBe(-19249);
   });
 
   test('calculates positive cash in hand', () => {
     const cashAfterSelling = 161750;
     const buyingPrice = 400000;
-    const requiredLoanAmount = 240000;
+    const actualLoanAmount = 240000;
     const arrangementFee = 999;
     
     // Final cash in hand: 161750 - 400000 + 240000 - 999 = 751
-    const result = calculateFinalCashInHand(cashAfterSelling, buyingPrice, requiredLoanAmount, arrangementFee);
+    const result = calculateFinalCashInHand(cashAfterSelling, buyingPrice, actualLoanAmount, arrangementFee);
     expect(result).toBe(751);
+  });
+});
+
+describe('calculateActualLoanAmount', () => {
+  test('returns the required loan amount when under the LTV limit', () => {
+    const requiredLoanAmount = 200000;
+    const buyingPrice = 400000;
+    const maxLoanToValue = 60;
+    const maxLoanAmount = 1000000;
+    const minLoanAmount = 25000;
+    
+    // Max by LTV is 400000 * 0.6 = 240000, which is > 200000
+    const result = calculateActualLoanAmount(requiredLoanAmount, buyingPrice, maxLoanToValue, maxLoanAmount, minLoanAmount);
+    expect(result).toBe(200000);
+  });
+
+  test('caps the loan at the max LTV when required loan exceeds it', () => {
+    const requiredLoanAmount = 300000;
+    const buyingPrice = 400000;
+    const maxLoanToValue = 60;
+    const maxLoanAmount = 1000000;
+    const minLoanAmount = 25000;
+    
+    // Max by LTV is 400000 * 0.6 = 240000, which is < 300000
+    const result = calculateActualLoanAmount(requiredLoanAmount, buyingPrice, maxLoanToValue, maxLoanAmount, minLoanAmount);
+    expect(result).toBe(240000);
+  });
+
+  test('caps the loan at the max loan amount when required loan exceeds it', () => {
+    const requiredLoanAmount = 1200000;
+    const buyingPrice = 2000000;
+    const maxLoanToValue = 80;
+    const maxLoanAmount = 1000000;
+    const minLoanAmount = 25000;
+    
+    // Max by LTV is 2000000 * 0.8 = 1600000, but max loan amount is 1000000
+    const result = calculateActualLoanAmount(requiredLoanAmount, buyingPrice, maxLoanToValue, maxLoanAmount, minLoanAmount);
+    expect(result).toBe(1000000);
+  });
+
+  test('returns null when the loan amount is below the minimum', () => {
+    const requiredLoanAmount = 20000;
+    const buyingPrice = 400000;
+    const maxLoanToValue = 60;
+    const maxLoanAmount = 1000000;
+    const minLoanAmount = 25000;
+    
+    const result = calculateActualLoanAmount(requiredLoanAmount, buyingPrice, maxLoanToValue, maxLoanAmount, minLoanAmount);
+    expect(result).toBeNull();
   });
 });
 

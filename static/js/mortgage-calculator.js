@@ -57,24 +57,41 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // For each eligible mortgage, calculate details
     const mortgageDetails = eligibleMortgages.map(mortgage => {
+      // Calculate the actual loan amount based on the mortgage's max LTV
+      const actualLoanAmount = Math.min(
+        requiredLoanAmount,
+        (buyingPrice * mortgage.maxLoanToValue / 100),
+        mortgage.maxLoanAmount
+      );
+      
+      // Make sure we're not below the minimum loan amount
+      if (actualLoanAmount < mortgage.minLoanAmount) {
+        return null; // This will be filtered out
+      }
+      
       // Calculate monthly payment in initial period
       const monthlyInitialPayment = calculateMonthlyPayment(
-        requiredLoanAmount,
+        actualLoanAmount,
         mortgage.initialRate,
         mortgage.overallTermYears * 12
       );
       
       // Calculate cash in hand at end of process
-      const finalCashInHand = cashAfterSelling - buyingPrice + requiredLoanAmount - mortgage.arrangementFee;
+      const finalCashInHand = cashAfterSelling - buyingPrice + actualLoanAmount - mortgage.arrangementFee;
+      
+      // Calculate actual LTV for this mortgage
+      const actualLoanToValueRatio = (actualLoanAmount / buyingPrice) * 100;
       
       return {
         ...mortgage,
+        actualLoanAmount,
         requiredLoanAmount,
         monthlyInitialPayment,
         finalCashInHand,
+        actualLoanToValueRatio,
         loanToValueRatio
       };
-    });
+    }).filter(Boolean); // Remove any null values
     
     // Filter out mortgages with negative cash in hand
     const validMortgageDetails = mortgageDetails.filter(mortgage => mortgage.finalCashInHand >= 0);
@@ -126,8 +143,8 @@ document.addEventListener('DOMContentLoaded', () => {
             <th>Period</th>
             <th>Term</th>
             <th>Arrangement Fee</th>
-            <th>Loan Amount</th>
-            <th>LTV</th>
+            <th>Total Mortgage</th>
+            <th>Actual LTV</th>
             <th>Max LTV</th>
             <th class="highlight">Monthly Payment</th>
             <th class="highlight">Cash in Hand</th>
@@ -145,8 +162,8 @@ document.addEventListener('DOMContentLoaded', () => {
             <td>${mortgage.initialPeriodYears} years</td>
             <td>${mortgage.overallTermYears} years</td>
             <td>£${mortgage.arrangementFee.toLocaleString('en-GB')}</td>
-            <td>£${mortgage.requiredLoanAmount.toLocaleString('en-GB', {maximumFractionDigits: 2})}</td>
-            <td>${mortgage.loanToValueRatio.toFixed(1)}%</td>
+            <td>£${mortgage.actualLoanAmount.toLocaleString('en-GB', {maximumFractionDigits: 2})}</td>
+            <td>${mortgage.actualLoanToValueRatio.toFixed(1)}%</td>
             <td>${mortgage.maxLoanToValue}%</td>
             <td class="highlight">£${mortgage.monthlyInitialPayment.toLocaleString('en-GB', {maximumFractionDigits: 2})}</td>
             <td class="highlight">£${mortgage.finalCashInHand.toLocaleString('en-GB', {maximumFractionDigits: 2})}</td>
