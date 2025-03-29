@@ -1,0 +1,179 @@
+:root {
+  --primary-color: #0C6E3B;
+  --secondary-color: #F1F1F1;
+  --text-color: #333;
+  --border-color: #CCCCCC;
+  --highlight-color: #0E8C4A;
+  --error-color: #D32F2F;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: Arial, sans-serif;
+}
+
+body {
+  color: var(--text-color);
+  background-color: #FFFFFF;
+  line-height: 1.6;
+  padding: 20px;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+h1 {
+  color: var(--primary-color);
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+h2 {
+  color: var(--primary-color);
+  margin-bottom: 15px;
+}
+
+.input-form {
+  background-color: var(--secondary-color);
+  padding: 20px;
+  border-radius: 5px;
+  margin-bottom: 30px;
+}
+
+.form-row {
+  display: flex;
+  flex-wrap: wrap;
+  margin-bottom: 15px;
+}
+
+.form-group {
+  flex: 1;
+  min-width: 250px;
+  margin-right: 20px;
+  margin-bottom: 10px;
+}
+
+.form-group:last-child {
+  margin-right: 0;
+}
+
+label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+}
+
+input[type="number"] {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  font-size: 16px;
+}
+
+input[type="number"]:focus {
+  border-color: var(--highlight-color);
+  outline: none;
+}
+
+.input-prefix {
+  position: relative;
+}
+
+.input-prefix input {
+  padding-left: 25px;
+}
+
+.input-prefix::before {
+  content: "£";
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.input-suffix {
+  position: relative;
+}
+
+.input-suffix input {
+  padding-right: 25px;
+}
+
+.input-suffix::after {
+  content: "%";
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.error-message {
+  color: var(--error-color);
+  font-size: 14px;
+  margin-top: 5px;
+}
+
+.results {
+  margin-top: 30px;
+}
+
+.mortgage-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.mortgage-card {
+  border: 1px solid var(--border-color);
+  border-radius: 5px;
+  padding: 20px;
+  background-color: white;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s;
+}
+
+.mortgage-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.mortgage-card h3 {
+  color: var(--primary-color);
+  margin-bottom: 10px;
+}
+
+.mortgage-details {
+  margin-bottom: 15px;
+}
+
+.mortgage-details p {
+  margin-bottom: 5px;
+}
+
+.highlight {
+  font-weight: bold;
+  color: var(--highlight-color);
+}
+
+.no-results {
+  text-align: center;
+  padding: 30px;
+  background-color: var(--secondary-color);
+  border-radius: 5px;
+}
+
+@media (max-width: 768px) {
+  .form-group {
+    min-width: 100%;
+    margin-right: 0;
+  }
+  
+  .mortgage-cards {
+    grid-template-columns: 1fr;
+  }
+}
