@@ -85,7 +85,7 @@ describe('calculateLoanToValueRatio', () => {
 });
 
 describe('calculateFinalCashInHand', () => {
-  test('calculates the correct final cash in hand', () => {
+  test('calculates the correct final cash in hand for home mover', () => {
     const cashAfterSelling = 161750;
     const buyingPrice = 450000;
     const actualLoanAmount = 270000; // 60% LTV
@@ -96,7 +96,7 @@ describe('calculateFinalCashInHand', () => {
     expect(result).toBe(-19249);
   });
 
-  test('calculates positive cash in hand', () => {
+  test('calculates positive cash in hand for home mover', () => {
     const cashAfterSelling = 161750;
     const buyingPrice = 400000;
     const actualLoanAmount = 240000;
@@ -107,7 +107,7 @@ describe('calculateFinalCashInHand', () => {
     expect(result).toBe(751);
   });
   
-  test('calculates cash in hand for simple scenario', () => {
+  test('calculates cash in hand for simple home mover scenario', () => {
     // Selling at 650K with no mortgage or fees
     const cashAfterSelling = 650000;
     const buyingPrice = 650000;
@@ -119,6 +119,35 @@ describe('calculateFinalCashInHand', () => {
     // Which is roughly 60% of purchase price (- arrangement fee)
     const result = calculateFinalCashInHand(cashAfterSelling, buyingPrice, actualLoanAmount, arrangementFee);
     expect(result).toBe(389001);
+  });
+  
+  test('calculates cash in hand for first-time buyer', () => {
+    // First-time buyer with 60K deposit
+    const deposit = 60000;
+    const buyingPrice = 500000;
+    // 90% LTV mortgage (450K)
+    const actualLoanAmount = 450000;
+    const arrangementFee = 999;
+    const isFirstTimeBuyer = true;
+    
+    // Final cash in hand: 60000 - (500000 - 450000) - 999 = 60000 - 50000 - 999 = 9001
+    const result = calculateFinalCashInHand(deposit, buyingPrice, actualLoanAmount, arrangementFee, isFirstTimeBuyer);
+    expect(result).toBe(9001);
+  });
+  
+  test('calculates negative cash in hand for first-time buyer with insufficient deposit', () => {
+    // First-time buyer with 40K deposit
+    const deposit = 40000;
+    const buyingPrice = 500000;
+    // 90% LTV mortgage (450K)
+    const actualLoanAmount = 450000;
+    const arrangementFee = 999;
+    const isFirstTimeBuyer = true;
+    
+    // Required deposit: 500000 - 450000 = 50000
+    // Final cash in hand: 40000 - 50000 - 999 = -10999
+    const result = calculateFinalCashInHand(deposit, buyingPrice, actualLoanAmount, arrangementFee, isFirstTimeBuyer);
+    expect(result).toBe(-10999);
   });
 });
 
