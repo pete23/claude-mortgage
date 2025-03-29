@@ -101,9 +101,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // Calculate loan to value ratio
     const loanToValueRatio = (requiredLoanAmount / buyingPrice) * 100;
     
-    // For first-time buyers, treat cash in hand as their deposit
-    // A first-time buyer has no selling price
-    const isFirstTimeBuyer = sellingPrice === 0;
+    // For first-time buyers, cashAfterSelling is just their initial cash/deposit
+    // No need for special handling as the calculation is the same
     
     // Check if we have enough data to calculate eligibility
     // We only need buying price - for first-time buyers who won't have a selling price
@@ -159,16 +158,10 @@ document.addEventListener('DOMContentLoaded', () => {
         );
         
         // Calculate cash in hand at end of process
-        if (isFirstTimeBuyer) {
-          // For first-time buyers:
-          // Initial cash/deposit - (purchase price - mortgage amount) - arrangement fee
-          // This is equivalent to: deposit - required deposit - arrangement fee
-          finalCashInHand = initialCashInHand - (buyingPrice - actualLoanAmount) - mortgage.arrangementFee;
-        } else {
-          // For home movers:
-          // Cash after selling + mortgage amount - purchase price - arrangement fee
-          finalCashInHand = cashAfterSelling + actualLoanAmount - buyingPrice - mortgage.arrangementFee;
-        }
+        // Available cash + mortgage amount - purchase price - arrangement fee
+        // For first-time buyers, available cash is their deposit
+        // For home movers, available cash is cash after selling their previous home
+        finalCashInHand = cashAfterSelling + actualLoanAmount - buyingPrice - mortgage.arrangementFee;
         
         // Calculate actual LTV for this mortgage
         actualLoanToValueRatio = (actualLoanAmount / buyingPrice) * 100;

@@ -55,21 +55,15 @@ function calculateLoanToValueRatio(requiredLoanAmount, buyingPrice) {
 
 /**
  * Calculate final cash in hand after the process
- * @param {number} cashAfterSelling - The cash available after selling (or initial deposit for first-time buyers)
+ * @param {number} availableCash - The cash available (from selling or initial deposit)
  * @param {number} buyingPrice - The buying price of the new property
  * @param {number} actualLoanAmount - The actual loan amount based on the mortgage's LTV
  * @param {number} arrangementFee - The mortgage arrangement fee
- * @param {boolean} isFirstTimeBuyer - Whether this is a first-time buyer (defaults to false)
  * @returns {number} The final cash in hand
  */
-function calculateFinalCashInHand(cashAfterSelling, buyingPrice, actualLoanAmount, arrangementFee, isFirstTimeBuyer = false) {
-  if (isFirstTimeBuyer) {
-    // For first-time buyers: initial deposit - required deposit - fee
-    return cashAfterSelling - (buyingPrice - actualLoanAmount) - arrangementFee;
-  } else {
-    // For home movers
-    return cashAfterSelling + actualLoanAmount - buyingPrice - arrangementFee;
-  }
+function calculateFinalCashInHand(availableCash, buyingPrice, actualLoanAmount, arrangementFee) {
+  // Available cash + mortgage amount - purchase price - arrangement fee
+  return availableCash + actualLoanAmount - buyingPrice - arrangementFee;
 }
 
 /**
