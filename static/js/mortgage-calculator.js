@@ -18,11 +18,66 @@ document.addEventListener('DOMContentLoaded', () => {
     buyingPriceInput
   ];
   
+  // Load saved data from localStorage
+  function loadFromLocalStorage() {
+    try {
+      const savedData = localStorage.getItem('mortgageCalculatorData');
+      if (savedData) {
+        const data = JSON.parse(savedData);
+        sellingPriceInput.value = data.sellingPrice || '';
+        cashInHandInput.value = data.cashInHand || '';
+        currentMortgageInput.value = data.currentMortgage || '';
+        agentFeeInput.value = data.agentFee || '';
+        otherFeesInput.value = data.otherFees || '';
+        buyingPriceInput.value = data.buyingPrice || '';
+      }
+    } catch (error) {
+      console.error('Error loading data from localStorage:', error);
+    }
+  }
+  
+  // Save data to localStorage
+  function saveToLocalStorage() {
+    try {
+      const data = {
+        sellingPrice: sellingPriceInput.value,
+        cashInHand: cashInHandInput.value,
+        currentMortgage: currentMortgageInput.value,
+        agentFee: agentFeeInput.value,
+        otherFees: otherFeesInput.value,
+        buyingPrice: buyingPriceInput.value
+      };
+      localStorage.setItem('mortgageCalculatorData', JSON.stringify(data));
+    } catch (error) {
+      console.error('Error saving data to localStorage:', error);
+    }
+  }
+  
+  // Add event listeners to all inputs
   allInputs.forEach(input => {
-    input.addEventListener('input', calculateMortgages);
+    input.addEventListener('input', () => {
+      calculateMortgages();
+      saveToLocalStorage();
+    });
   });
   
-  // Initial calculation
+  // Add event listener to clear button
+  const clearButton = document.getElementById('clear-data');
+  clearButton.addEventListener('click', () => {
+    // Clear all input fields
+    allInputs.forEach(input => {
+      input.value = '';
+    });
+    
+    // Remove data from localStorage
+    localStorage.removeItem('mortgageCalculatorData');
+    
+    // Recalculate
+    calculateMortgages();
+  });
+  
+  // Load saved data and calculate results
+  loadFromLocalStorage();
   calculateMortgages();
   
   function calculateMortgages() {
