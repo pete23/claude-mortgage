@@ -115,27 +115,46 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>`;
       }
     } else {
-      html = '<div class="mortgage-cards">';
+      html = '<div class="table-responsive"><table class="mortgage-table">';
       
+      // Table header
+      html += `
+        <thead>
+          <tr>
+            <th>Mortgage Type</th>
+            <th>Initial Rate</th>
+            <th>Period</th>
+            <th>Term</th>
+            <th>Arrangement Fee</th>
+            <th>Loan Amount</th>
+            <th>LTV</th>
+            <th>Max LTV</th>
+            <th class="highlight">Monthly Payment</th>
+            <th class="highlight">Cash in Hand</th>
+          </tr>
+        </thead>
+        <tbody>
+      `;
+      
+      // Table rows
       mortgages.forEach(mortgage => {
         html += `
-          <div class="mortgage-card">
-            <h3>${mortgage.name} (${mortgage.initialRate}%)</h3>
-            <div class="mortgage-details">
-              <p><strong>Initial period:</strong> ${mortgage.initialPeriodYears} years</p>
-              <p><strong>Overall term:</strong> ${mortgage.overallTermYears} years</p>
-              <p><strong>Arrangement fee:</strong> £${mortgage.arrangementFee.toLocaleString('en-GB')}</p>
-              <p><strong>Loan amount:</strong> £${mortgage.requiredLoanAmount.toLocaleString('en-GB', {maximumFractionDigits: 2})}</p>
-              <p><strong>Loan to value:</strong> ${mortgage.loanToValueRatio.toFixed(1)}%</p>
-              <p><strong>Max loan to value:</strong> ${mortgage.maxLoanToValue}%</p>
-              <p class="highlight">Monthly payment: £${mortgage.monthlyInitialPayment.toLocaleString('en-GB', {maximumFractionDigits: 2})}</p>
-              <p class="highlight">Cash in hand: £${mortgage.finalCashInHand.toLocaleString('en-GB', {maximumFractionDigits: 2})}</p>
-            </div>
-          </div>
+          <tr>
+            <td>${mortgage.name}</td>
+            <td>${mortgage.initialRate}%</td>
+            <td>${mortgage.initialPeriodYears} years</td>
+            <td>${mortgage.overallTermYears} years</td>
+            <td>£${mortgage.arrangementFee.toLocaleString('en-GB')}</td>
+            <td>£${mortgage.requiredLoanAmount.toLocaleString('en-GB', {maximumFractionDigits: 2})}</td>
+            <td>${mortgage.loanToValueRatio.toFixed(1)}%</td>
+            <td>${mortgage.maxLoanToValue}%</td>
+            <td class="highlight">£${mortgage.monthlyInitialPayment.toLocaleString('en-GB', {maximumFractionDigits: 2})}</td>
+            <td class="highlight">£${mortgage.finalCashInHand.toLocaleString('en-GB', {maximumFractionDigits: 2})}</td>
+          </tr>
         `;
       });
       
-      html += '</div>';
+      html += '</tbody></table></div>';
     }
     
     resultsContainer.innerHTML = html;

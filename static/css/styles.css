@@ -122,37 +122,55 @@ input[type="number"]:focus {
   margin-top: 30px;
 }
 
-.mortgage-cards {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 20px;
-}
-
-.mortgage-card {
-  border: 1px solid var(--border-color);
-  border-radius: 5px;
-  padding: 20px;
+.mortgage-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
   background-color: white;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  transition: transform 0.2s;
 }
 
-.mortgage-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+.mortgage-table th {
+  background-color: var(--primary-color);
+  color: white;
+  text-align: left;
+  padding: 12px;
+  font-weight: bold;
+  position: sticky;
+  top: 0;
 }
 
-.mortgage-card h3 {
-  color: var(--primary-color);
-  margin-bottom: 10px;
+.mortgage-table th:hover {
+  background-color: var(--highlight-color);
+  cursor: pointer;
 }
 
-.mortgage-details {
-  margin-bottom: 15px;
+.mortgage-table td {
+  padding: 12px;
+  border-bottom: 1px solid var(--border-color);
 }
 
-.mortgage-details p {
-  margin-bottom: 5px;
+.mortgage-table tr:last-child td {
+  border-bottom: none;
+}
+
+.mortgage-table tr:nth-child(even) {
+  background-color: var(--secondary-color);
+}
+
+.mortgage-table tr:hover {
+  background-color: #e9f7ef;
+}
+
+.mortgage-table .highlight {
+  font-weight: bold;
+  color: var(--highlight-color);
+}
+
+.table-responsive {
+  overflow-x: auto;
+  max-width: 100%;
+  margin-bottom: 20px;
 }
 
 .highlight {
