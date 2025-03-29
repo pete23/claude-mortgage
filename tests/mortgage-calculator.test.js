@@ -91,7 +91,7 @@ describe('calculateFinalCashInHand', () => {
     const actualLoanAmount = 270000; // 60% LTV
     const arrangementFee = 999;
     
-    // Final cash in hand: 161750 - 450000 + 270000 - 999 = -19249
+    // Final cash in hand: 161750 + 270000 - 450000 - 999 = -19249
     const result = calculateFinalCashInHand(cashAfterSelling, buyingPrice, actualLoanAmount, arrangementFee);
     expect(result).toBe(-19249);
   });
@@ -102,9 +102,23 @@ describe('calculateFinalCashInHand', () => {
     const actualLoanAmount = 240000;
     const arrangementFee = 999;
     
-    // Final cash in hand: 161750 - 400000 + 240000 - 999 = 751
+    // Final cash in hand: 161750 + 240000 - 400000 - 999 = 751
     const result = calculateFinalCashInHand(cashAfterSelling, buyingPrice, actualLoanAmount, arrangementFee);
     expect(result).toBe(751);
+  });
+  
+  test('calculates cash in hand for simple scenario', () => {
+    // Selling at 650K with no mortgage or fees
+    const cashAfterSelling = 650000;
+    const buyingPrice = 650000;
+    // Buying at 650K with 60% LTV mortgage (390K)
+    const actualLoanAmount = 390000;
+    const arrangementFee = 999;
+    
+    // Final cash in hand: 650000 + 390000 - 650000 - 999 = 389001
+    // Which is roughly 60% of purchase price (- arrangement fee)
+    const result = calculateFinalCashInHand(cashAfterSelling, buyingPrice, actualLoanAmount, arrangementFee);
+    expect(result).toBe(389001);
   });
 });
 

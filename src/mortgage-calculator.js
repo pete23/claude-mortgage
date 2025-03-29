@@ -62,7 +62,7 @@ function calculateLoanToValueRatio(requiredLoanAmount, buyingPrice) {
  * @returns {number} The final cash in hand
  */
 function calculateFinalCashInHand(cashAfterSelling, buyingPrice, actualLoanAmount, arrangementFee) {
-  return cashAfterSelling - buyingPrice + actualLoanAmount - arrangementFee;
+  return cashAfterSelling + actualLoanAmount - buyingPrice - arrangementFee;
 }
 
 /**

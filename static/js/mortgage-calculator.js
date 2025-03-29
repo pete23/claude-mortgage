@@ -154,7 +154,8 @@ document.addEventListener('DOMContentLoaded', () => {
         );
         
         // Calculate cash in hand at end of process
-        finalCashInHand = cashAfterSelling - buyingPrice + actualLoanAmount - mortgage.arrangementFee;
+        // Cash after selling + mortgage amount - purchase price - arrangement fee
+        finalCashInHand = cashAfterSelling + actualLoanAmount - buyingPrice - mortgage.arrangementFee;
         
         // Calculate actual LTV for this mortgage
         actualLoanToValueRatio = (actualLoanAmount / buyingPrice) * 100;
