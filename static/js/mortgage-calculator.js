@@ -210,8 +210,7 @@ document.addEventListener('DOMContentLoaded', () => {
           <th>Term</th>
           <th>Arrangement Fee</th>
           <th>Total Mortgage</th>
-          <th>Actual LTV</th>
-          <th>Max LTV</th>
+          <th>LTV</th>
           <th class="highlight">Monthly Payment</th>
           <th class="highlight">Cash in Hand</th>
           ${canCalculateEligibility ? '<th>Status</th>' : ''}
@@ -224,7 +223,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (mortgages.length === 0) {
       html += `
         <tr>
-          <td colspan="${canCalculateEligibility ? '11' : '10'}" class="no-results">No mortgage data available</td>
+          <td colspan="${canCalculateEligibility ? '10' : '9'}" class="no-results">No mortgage data available</td>
         </tr>
       `;
     } else {
@@ -241,7 +240,6 @@ document.addEventListener('DOMContentLoaded', () => {
             <td>${mortgage.overallTermYears} years</td>
             <td>£${mortgage.arrangementFee.toLocaleString('en-GB')}</td>
             <td>£${mortgage.loanAmount.toLocaleString('en-GB', {maximumFractionDigits: 2})}</td>
-            <td>${mortgage.loanToValuePercentage.toFixed(1)}%</td>
             <td>${mortgage.maxLoanToValue}%</td>
             <td class="highlight">£${mortgage.monthlyInitialPayment.toLocaleString('en-GB', {maximumFractionDigits: 2})}</td>
             <td class="highlight ${mortgage.hasNegativeCashInHand ? 'negative-cash' : ''}">£${mortgage.finalCashInHand.toLocaleString('en-GB', {maximumFractionDigits: 2})}</td>
