@@ -131,7 +131,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Store the reason for ineligibility
         if (canCalculateEligibility && !isEligible) {
           if (maxLoanAmount < mortgage.minLoanAmount) {
-            ineligibleReason = `Property value too low for minimum loan (£${mortgage.minLoanAmount.toLocaleString('en-GB')})`;
+            ineligibleReason = `Property value too low for minimum loan (£${Math.round(mortgage.minLoanAmount).toLocaleString('en-GB')})`;
           }
           // No need to check for maximum as we already capped it
         }
@@ -239,10 +239,10 @@ document.addEventListener('DOMContentLoaded', () => {
             <td>${mortgage.initialPeriodYears} years</td>
             <td>${mortgage.overallTermYears} years</td>
             <td>£${mortgage.arrangementFee.toLocaleString('en-GB')}</td>
-            <td>£${mortgage.loanAmount.toLocaleString('en-GB', {maximumFractionDigits: 2})}</td>
+            <td>£${Math.round(mortgage.loanAmount).toLocaleString('en-GB')}</td>
             <td>${mortgage.maxLoanToValue}%</td>
-            <td class="highlight">£${mortgage.monthlyInitialPayment.toLocaleString('en-GB', {maximumFractionDigits: 2})}</td>
-            <td class="highlight ${mortgage.hasNegativeCashInHand ? 'negative-cash' : ''}">£${mortgage.finalCashInHand.toLocaleString('en-GB', {maximumFractionDigits: 2})}</td>
+            <td class="highlight">£${Math.round(mortgage.monthlyInitialPayment).toLocaleString('en-GB')}</td>
+            <td class="highlight ${mortgage.hasNegativeCashInHand ? 'negative-cash' : ''}">£${Math.round(mortgage.finalCashInHand).toLocaleString('en-GB')}</td>
             ${canCalculateEligibility ? `<td class="ineligible-reason">${(!mortgage.isEligible || mortgage.hasNegativeCashInHand) ? reason : 'Eligible'}</td>` : ''}
           </tr>
         `;
