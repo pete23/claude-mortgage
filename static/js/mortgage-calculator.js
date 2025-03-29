@@ -101,61 +101,92 @@ document.addEventListener('DOMContentLoaded', () => {
     // Calculate loan to value ratio
     const loanToValueRatio = (requiredLoanAmount / buyingPrice) * 100;
     
-    // Filter eligible mortgages
-    const eligibleMortgages = mortgageRates.filter(mortgage => {
-      return requiredLoanAmount >= mortgage.minLoanAmount &&
-             requiredLoanAmount <= mortgage.maxLoanAmount &&
-             loanToValueRatio <= mortgage.maxLoanToValue &&
-             buyingPrice > 0 &&
-             requiredLoanAmount > 0;
-    });
+    // Check if we have enough data to calculate eligibility
+    const canCalculateEligibility = buyingPrice > 0 && sellingPrice > 0;
     
-    // For each eligible mortgage, calculate details
-    const mortgageDetails = eligibleMortgages.map(mortgage => {
-      // Calculate the actual loan amount based on the mortgage's max LTV
-      const actualLoanAmount = Math.min(
-        requiredLoanAmount,
-        (buyingPrice * mortgage.maxLoanToValue / 100),
-        mortgage.maxLoanAmount
-      );
+    // Process all mortgages with eligibility information
+    const allMortgageDetails = mortgageRates.map(mortgage => {
+      // Check eligibility criteria
+      const isEligible = canCalculateEligibility && 
+                        requiredLoanAmount >= mortgage.minLoanAmount &&
+                        requiredLoanAmount <= mortgage.maxLoanAmount &&
+                        loanToValueRatio <= mortgage.maxLoanToValue &&
+                        requiredLoanAmount > 0;
       
-      // Make sure we're not below the minimum loan amount
-      if (actualLoanAmount < mortgage.minLoanAmount) {
-        return null; // This will be filtered out
+      // Store the reason for ineligibility
+      let ineligibleReason = '';
+      if (canCalculateEligibility && !isEligible) {
+        if (requiredLoanAmount <= 0) {
+          ineligibleReason = 'No loan needed';
+        } else if (requiredLoanAmount < mortgage.minLoanAmount) {
+          ineligibleReason = `Loan below minimum (£${mortgage.minLoanAmount.toLocaleString('en-GB')})`;
+        } else if (requiredLoanAmount > mortgage.maxLoanAmount) {
+          ineligibleReason = `Loan above maximum (£${mortgage.maxLoanAmount.toLocaleString('en-GB')})`;
+        } else if (loanToValueRatio > mortgage.maxLoanToValue) {
+          ineligibleReason = `LTV too high (${loanToValueRatio.toFixed(1)}% > ${mortgage.maxLoanToValue}%)`;
+        }
       }
       
-      // Calculate monthly payment in initial period
-      const monthlyInitialPayment = calculateMonthlyPayment(
-        actualLoanAmount,
-        mortgage.initialRate,
-        mortgage.overallTermYears * 12
-      );
+      // Calculate the actual loan amount based on the mortgage's max LTV
+      // For ineligible mortgages, we'll still try to calculate this for display
+      let actualLoanAmount = 0;
+      let monthlyInitialPayment = 0;
+      let finalCashInHand = 0;
+      let actualLoanToValueRatio = 0;
       
-      // Calculate cash in hand at end of process
-      const finalCashInHand = cashAfterSelling - buyingPrice + actualLoanAmount - mortgage.arrangementFee;
+      if (canCalculateEligibility && buyingPrice > 0) {
+        actualLoanAmount = Math.min(
+          Math.max(requiredLoanAmount, 0),
+          (buyingPrice * mortgage.maxLoanToValue / 100),
+          mortgage.maxLoanAmount
+        );
+        
+        // If below minimum loan amount, set to minimum for display purposes
+        if (actualLoanAmount < mortgage.minLoanAmount && actualLoanAmount > 0) {
+          actualLoanAmount = mortgage.minLoanAmount;
+        }
+        
+        // Calculate monthly payment in initial period
+        monthlyInitialPayment = calculateMonthlyPayment(
+          actualLoanAmount,
+          mortgage.initialRate,
+          mortgage.overallTermYears * 12
+        );
+        
+        // Calculate cash in hand at end of process
+        finalCashInHand = cashAfterSelling - buyingPrice + actualLoanAmount - mortgage.arrangementFee;
+        
+        // Calculate actual LTV for this mortgage
+        actualLoanToValueRatio = (actualLoanAmount / buyingPrice) * 100;
+      }
       
-      // Calculate actual LTV for this mortgage
-      const actualLoanToValueRatio = (actualLoanAmount / buyingPrice) * 100;
+      // Check if cash in hand is negative
+      const hasNegativeCashInHand = finalCashInHand < 0;
       
       return {
         ...mortgage,
+        isEligible,
+        ineligibleReason,
         actualLoanAmount,
         requiredLoanAmount,
         monthlyInitialPayment,
         finalCashInHand,
         actualLoanToValueRatio,
-        loanToValueRatio
+        loanToValueRatio,
+        hasNegativeCashInHand
       };
-    }).filter(Boolean); // Remove any null values
+    });
     
-    // Filter out mortgages with negative cash in hand
-    const validMortgageDetails = mortgageDetails.filter(mortgage => mortgage.finalCashInHand >= 0);
-    
-    // Sort by cash in hand at end of process (descending)
-    validMortgageDetails.sort((a, b) => b.finalCashInHand - a.finalCashInHand);
+    // Sort by eligibility first, then by cash in hand (descending)
+    allMortgageDetails.sort((a, b) => {
+      if (a.isEligible && !b.isEligible) return -1;
+      if (!a.isEligible && b.isEligible) return 1;
+      if (a.isEligible && b.isEligible) return b.finalCashInHand - a.finalCashInHand;
+      return 0;
+    });
     
     // Display results
-    displayResults(validMortgageDetails, requiredLoanAmount, loanToValueRatio);
+    displayResults(allMortgageDetails, requiredLoanAmount, loanToValueRatio, canCalculateEligibility);
   }
   
   function calculateMonthlyPayment(loanAmount, annualInterestRate, loanTermMonths) {
@@ -172,46 +203,47 @@ document.addEventListener('DOMContentLoaded', () => {
     return loanAmount * (monthlyInterestRate * compoundFactor) / (compoundFactor - 1);
   }
   
-  function displayResults(mortgages, requiredLoanAmount, loanToValueRatio) {
+  function displayResults(mortgages, requiredLoanAmount, loanToValueRatio, canCalculateEligibility) {
     let html = '';
     
+    // Always show the table with all mortgages
+    html = '<div class="table-responsive"><table class="mortgage-table">';
+    
+    // Table header
+    html += `
+      <thead>
+        <tr>
+          <th>Mortgage Type</th>
+          <th>Initial Rate</th>
+          <th>Period</th>
+          <th>Term</th>
+          <th>Arrangement Fee</th>
+          <th>Total Mortgage</th>
+          <th>Actual LTV</th>
+          <th>Max LTV</th>
+          <th class="highlight">Monthly Payment</th>
+          <th class="highlight">Cash in Hand</th>
+          ${canCalculateEligibility ? '<th>Status</th>' : ''}
+        </tr>
+      </thead>
+      <tbody>
+    `;
+    
+    // If we don't have any mortgages (unlikely), show a message
     if (mortgages.length === 0) {
-      if (requiredLoanAmount <= 0) {
-        html = '<div class="no-results">Complete the form to see mortgage options</div>';
-      } else {
-        html = `<div class="no-results">
-                  <p>No eligible mortgages found for:</p>
-                  <p>Loan amount: £${requiredLoanAmount.toLocaleString('en-GB', {maximumFractionDigits: 2})}</p>
-                  <p>Loan to value ratio: ${loanToValueRatio.toFixed(1)}%</p>
-                  <p>Note: Options with negative cash in hand are filtered out</p>
-                </div>`;
-      }
-    } else {
-      html = '<div class="table-responsive"><table class="mortgage-table">';
-      
-      // Table header
       html += `
-        <thead>
-          <tr>
-            <th>Mortgage Type</th>
-            <th>Initial Rate</th>
-            <th>Period</th>
-            <th>Term</th>
-            <th>Arrangement Fee</th>
-            <th>Total Mortgage</th>
-            <th>Actual LTV</th>
-            <th>Max LTV</th>
-            <th class="highlight">Monthly Payment</th>
-            <th class="highlight">Cash in Hand</th>
-          </tr>
-        </thead>
-        <tbody>
+        <tr>
+          <td colspan="${canCalculateEligibility ? '11' : '10'}" class="no-results">No mortgage data available</td>
+        </tr>
       `;
-      
-      // Table rows
+    } else {
+      // Table rows for all mortgages
       mortgages.forEach(mortgage => {
+        const trClass = (!mortgage.isEligible || mortgage.hasNegativeCashInHand) ? 'ineligible' : '';
+        const reason = mortgage.hasNegativeCashInHand && mortgage.isEligible ? 'Negative cash in hand' : mortgage.ineligibleReason;
+        
         html += `
-          <tr>
+          <tr class="${trClass}">
             <td>${mortgage.name}</td>
             <td>${mortgage.initialRate}%</td>
             <td>${mortgage.initialPeriodYears} years</td>
@@ -221,12 +253,18 @@ document.addEventListener('DOMContentLoaded', () => {
             <td>${mortgage.actualLoanToValueRatio.toFixed(1)}%</td>
             <td>${mortgage.maxLoanToValue}%</td>
             <td class="highlight">£${mortgage.monthlyInitialPayment.toLocaleString('en-GB', {maximumFractionDigits: 2})}</td>
-            <td class="highlight">£${mortgage.finalCashInHand.toLocaleString('en-GB', {maximumFractionDigits: 2})}</td>
+            <td class="highlight ${mortgage.hasNegativeCashInHand ? 'negative-cash' : ''}">£${mortgage.finalCashInHand.toLocaleString('en-GB', {maximumFractionDigits: 2})}</td>
+            ${canCalculateEligibility ? `<td class="ineligible-reason">${(!mortgage.isEligible || mortgage.hasNegativeCashInHand) ? reason : 'Eligible'}</td>` : ''}
           </tr>
         `;
       });
-      
-      html += '</tbody></table></div>';
+    }
+    
+    html += '</tbody></table></div>';
+    
+    // If we don't have enough data to calculate eligibility, show a message
+    if (!canCalculateEligibility) {
+      html = '<div class="no-results">Enter selling and buying prices to see eligibility</div>' + html;
     }
     
     resultsContainer.innerHTML = html;

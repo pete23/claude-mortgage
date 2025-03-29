@@ -162,9 +162,36 @@ input[type="number"]:focus {
   background-color: #e9f7ef;
 }
 
+.mortgage-table tr.ineligible {
+  color: #999;
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.mortgage-table tr.ineligible:hover {
+  background-color: rgba(0, 0, 0, 0.07);
+}
+
+.mortgage-table tr.ineligible td.ineligible-reason {
+  font-style: italic;
+  color: #777;
+}
+
 .mortgage-table .highlight {
   font-weight: bold;
   color: var(--highlight-color);
+}
+
+.mortgage-table tr.ineligible .highlight {
+  font-weight: normal;
+  color: #999;
+}
+
+.mortgage-table .highlight.negative-cash {
+  color: #D32F2F;
+}
+
+.mortgage-table tr.ineligible .highlight.negative-cash {
+  color: #E57373;
 }
 
 .table-responsive {
