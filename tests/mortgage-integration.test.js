@@ -4,7 +4,7 @@ const {
   calculateRequiredLoanAmount,
   calculateLoanToValueRatio,
   calculateFinalCashInHand,
-  calculateActualLoanAmount,
+  calculateMaxLoanAmount,
   isMortgageEligible
 } = require('../src/mortgage-calculator');
 
@@ -40,24 +40,22 @@ describe('Mortgage Calculation Integration Tests', () => {
     
     // Calculate details for eligible mortgages
     const mortgageDetails = eligibleMortgages.map(mortgage => {
-      // Calculate the actual loan amount based on the mortgage's max LTV
-      const actualLoanAmount = calculateActualLoanAmount(
-        requiredLoanAmount,
+      // Calculate the maximum loan amount for this mortgage
+      const maxLoanAmount = calculateMaxLoanAmount(
         buyingPrice,
         mortgage.maxLoanToValue,
-        mortgage.maxLoanAmount,
-        mortgage.minLoanAmount
+        mortgage.maxLoanAmount
       );
       
-      // If null, this mortgage is no longer eligible
-      if (actualLoanAmount === null) {
+      // Check if loan amount is below minimum (ineligible)
+      if (maxLoanAmount < mortgage.minLoanAmount) {
         return null;
       }
       
-      const actualLoanToValueRatio = (actualLoanAmount / buyingPrice) * 100;
+      const loanToValuePercentage = (maxLoanAmount / buyingPrice) * 100;
       
       const monthlyInitialPayment = calculateMonthlyPayment(
-        actualLoanAmount,
+        maxLoanAmount,
         mortgage.initialRate,
         mortgage.overallTermYears * 12
       );
@@ -65,18 +63,16 @@ describe('Mortgage Calculation Integration Tests', () => {
       const finalCashInHand = calculateFinalCashInHand(
         cashAfterSelling,
         buyingPrice,
-        actualLoanAmount,
+        maxLoanAmount,
         mortgage.arrangementFee
       );
       
       return {
         ...mortgage,
-        requiredLoanAmount,
-        actualLoanAmount,
+        loanAmount: maxLoanAmount,
         monthlyInitialPayment,
         finalCashInHand,
-        loanToValueRatio,
-        actualLoanToValueRatio
+        loanToValuePercentage
       };
     }).filter(Boolean); // Remove any null values
     
@@ -99,17 +95,17 @@ describe('Mortgage Calculation Integration Tests', () => {
       mortgagesByLTV[mortgage.maxLoanToValue] = mortgage;
     });
     
-    // Actual loan amounts should be limited by the mortgage's max LTV
-    expect(mortgagesByLTV[60].actualLoanAmount).toBeLessThanOrEqual(buyingPrice * 0.6);
-    expect(mortgagesByLTV[75].actualLoanAmount).toBeLessThanOrEqual(buyingPrice * 0.75);
-    expect(mortgagesByLTV[90].actualLoanAmount).toBeLessThanOrEqual(buyingPrice * 0.9);
+    // Loan amounts should be limited by the mortgage's max LTV
+    expect(mortgagesByLTV[60].loanAmount).toBeLessThanOrEqual(buyingPrice * 0.6);
+    expect(mortgagesByLTV[75].loanAmount).toBeLessThanOrEqual(buyingPrice * 0.75);
+    expect(mortgagesByLTV[90].loanAmount).toBeLessThanOrEqual(buyingPrice * 0.9);
     
     // In scenarios where requiredLoanAmount < all LTV limits, the actualLoanAmount is the same
     // We'll test something more reliable instead
     expect(Object.keys(mortgagesByLTV).length).toBe(3);
     
-    // Since cash in hand is negative, none should be valid
-    expect(validMortgageDetails.length).toBe(0);
+    // Since we now always take the maximum loan amount, all should be valid
+    expect(validMortgageDetails.length).toBe(3);
   });
 
   // Test scenario 2: User with high LTV needing filtering
@@ -141,26 +137,24 @@ describe('Mortgage Calculation Integration Tests', () => {
     
     // Calculate details for eligible mortgages
     const mortgageDetails = eligibleMortgages.map(mortgage => {
-      // Calculate the actual loan amount based on the mortgage's max LTV
-      const actualLoanAmount = calculateActualLoanAmount(
-        requiredLoanAmount,
+      // Calculate the maximum loan amount for this mortgage
+      const maxLoanAmount = calculateMaxLoanAmount(
         buyingPrice,
         mortgage.maxLoanToValue,
-        mortgage.maxLoanAmount,
-        mortgage.minLoanAmount
+        mortgage.maxLoanAmount
       );
       
-      // If null, this mortgage is no longer eligible
-      if (actualLoanAmount === null) {
+      // If below minimum loan amount, it's not eligible
+      if (maxLoanAmount < mortgage.minLoanAmount) {
         return null;
       }
       
-      const actualLoanToValueRatio = (actualLoanAmount / buyingPrice) * 100;
+      const loanToValuePercentage = (maxLoanAmount / buyingPrice) * 100;
       
       return {
         ...mortgage,
-        actualLoanAmount,
-        actualLoanToValueRatio
+        loanAmount: maxLoanAmount,
+        loanToValuePercentage
       };
     }).filter(Boolean);
     
@@ -169,10 +163,10 @@ describe('Mortgage Calculation Integration Tests', () => {
     expect(eligibleMortgages.length).toBe(1); // Only the 90% LTV mortgage should be eligible
     expect(eligibleMortgages[0].maxLoanToValue).toBe(90); // Confirm it's the 90% LTV mortgage
     
-    // Check that the actual loan amount is capped by the max LTV
-    const expectedLoanAmount = Math.min(requiredLoanAmount, buyingPrice * 0.9);
-    expect(mortgageDetails[0].actualLoanAmount).toBe(expectedLoanAmount);
-    expect(mortgageDetails[0].actualLoanToValueRatio).toBeLessThanOrEqual(90);
+    // Check that the loan amount is at the max LTV 
+    const expectedLoanAmount = Math.min(buyingPrice * 0.9, 1000000); // Max LTV of 90% or max amount
+    expect(mortgageDetails[0].loanAmount).toBe(expectedLoanAmount);
+    expect(mortgageDetails[0].loanToValuePercentage).toBeLessThanOrEqual(90);
   });
 
   // Test scenario 3: User with cash surplus (negative loan amount)

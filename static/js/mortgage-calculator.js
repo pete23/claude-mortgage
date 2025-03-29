@@ -110,61 +110,47 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Process all mortgages with eligibility information
     const allMortgageDetails = mortgageRates.map(mortgage => {
-      // Check eligibility criteria
-      const isEligible = canCalculateEligibility && 
-                        requiredLoanAmount >= mortgage.minLoanAmount &&
-                        requiredLoanAmount <= mortgage.maxLoanAmount &&
-                        loanToValueRatio <= mortgage.maxLoanToValue &&
-                        requiredLoanAmount > 0;
-      
-      // Store the reason for ineligibility
-      let ineligibleReason = '';
-      if (canCalculateEligibility && !isEligible) {
-        if (requiredLoanAmount <= 0) {
-          ineligibleReason = 'No loan needed';
-        } else if (requiredLoanAmount < mortgage.minLoanAmount) {
-          ineligibleReason = `Loan below minimum (£${mortgage.minLoanAmount.toLocaleString('en-GB')})`;
-        } else if (requiredLoanAmount > mortgage.maxLoanAmount) {
-          ineligibleReason = `Loan above maximum (£${mortgage.maxLoanAmount.toLocaleString('en-GB')})`;
-        } else if (loanToValueRatio > mortgage.maxLoanToValue) {
-          ineligibleReason = `LTV too high (${loanToValueRatio.toFixed(1)}% > ${mortgage.maxLoanToValue}%)`;
-        }
-      }
-      
-      // Calculate the actual loan amount based on the mortgage's max LTV
-      // For ineligible mortgages, we'll still try to calculate this for display
-      let actualLoanAmount = 0;
+      // Calculate maximum possible loan amount for this mortgage
+      let maxLoanAmount = 0;
       let monthlyInitialPayment = 0;
       let finalCashInHand = 0;
-      let actualLoanToValueRatio = 0;
+      let loanToValuePercentage = 0;
+      let isEligible = false;
+      let ineligibleReason = '';
       
       if (canCalculateEligibility && buyingPrice > 0) {
-        actualLoanAmount = Math.min(
-          Math.max(requiredLoanAmount, 0),
-          (buyingPrice * mortgage.maxLoanToValue / 100),
-          mortgage.maxLoanAmount
+        // Calculate the maximum loan amount based on the product's LTV limit
+        maxLoanAmount = Math.min(
+          (buyingPrice * mortgage.maxLoanToValue / 100), // LTV limit
+          mortgage.maxLoanAmount // Product's maximum loan 
         );
         
-        // If below minimum loan amount, set to minimum for display purposes
-        if (actualLoanAmount < mortgage.minLoanAmount && actualLoanAmount > 0) {
-          actualLoanAmount = mortgage.minLoanAmount;
+        // Check if this mortgage is eligible
+        isEligible = maxLoanAmount >= mortgage.minLoanAmount;
+        
+        // Store the reason for ineligibility
+        if (canCalculateEligibility && !isEligible) {
+          if (maxLoanAmount < mortgage.minLoanAmount) {
+            ineligibleReason = `Property value too low for minimum loan (£${mortgage.minLoanAmount.toLocaleString('en-GB')})`;
+          }
+          // No need to check for maximum as we already capped it
         }
+        
+        // Even for ineligible mortgages, calculate the values for display
         
         // Calculate monthly payment in initial period
         monthlyInitialPayment = calculateMonthlyPayment(
-          actualLoanAmount,
+          maxLoanAmount,
           mortgage.initialRate,
           mortgage.overallTermYears * 12
         );
         
         // Calculate cash in hand at end of process
         // Available cash + mortgage amount - purchase price - arrangement fee
-        // For first-time buyers, available cash is their deposit
-        // For home movers, available cash is cash after selling their previous home
-        finalCashInHand = cashAfterSelling + actualLoanAmount - buyingPrice - mortgage.arrangementFee;
+        finalCashInHand = cashAfterSelling + maxLoanAmount - buyingPrice - mortgage.arrangementFee;
         
-        // Calculate actual LTV for this mortgage
-        actualLoanToValueRatio = (actualLoanAmount / buyingPrice) * 100;
+        // Calculate LTV percentage (will be the max LTV or less)
+        loanToValuePercentage = (maxLoanAmount / buyingPrice) * 100;
       }
       
       // Check if cash in hand is negative
@@ -174,12 +160,10 @@ document.addEventListener('DOMContentLoaded', () => {
         ...mortgage,
         isEligible,
         ineligibleReason,
-        actualLoanAmount,
-        requiredLoanAmount,
+        loanAmount: maxLoanAmount,
         monthlyInitialPayment,
         finalCashInHand,
-        actualLoanToValueRatio,
-        loanToValueRatio,
+        loanToValuePercentage,
         hasNegativeCashInHand
       };
     });
@@ -256,8 +240,8 @@ document.addEventListener('DOMContentLoaded', () => {
             <td>${mortgage.initialPeriodYears} years</td>
             <td>${mortgage.overallTermYears} years</td>
             <td>£${mortgage.arrangementFee.toLocaleString('en-GB')}</td>
-            <td>£${mortgage.actualLoanAmount.toLocaleString('en-GB', {maximumFractionDigits: 2})}</td>
-            <td>${mortgage.actualLoanToValueRatio.toFixed(1)}%</td>
+            <td>£${mortgage.loanAmount.toLocaleString('en-GB', {maximumFractionDigits: 2})}</td>
+            <td>${mortgage.loanToValuePercentage.toFixed(1)}%</td>
             <td>${mortgage.maxLoanToValue}%</td>
             <td class="highlight">£${mortgage.monthlyInitialPayment.toLocaleString('en-GB', {maximumFractionDigits: 2})}</td>
             <td class="highlight ${mortgage.hasNegativeCashInHand ? 'negative-cash' : ''}">£${mortgage.finalCashInHand.toLocaleString('en-GB', {maximumFractionDigits: 2})}</td>
