@@ -76,11 +76,14 @@ document.addEventListener('DOMContentLoaded', () => {
       };
     });
     
+    // Filter out mortgages with negative cash in hand
+    const validMortgageDetails = mortgageDetails.filter(mortgage => mortgage.finalCashInHand >= 0);
+    
     // Sort by cash in hand at end of process (descending)
-    mortgageDetails.sort((a, b) => b.finalCashInHand - a.finalCashInHand);
+    validMortgageDetails.sort((a, b) => b.finalCashInHand - a.finalCashInHand);
     
     // Display results
-    displayResults(mortgageDetails, requiredLoanAmount, loanToValueRatio);
+    displayResults(validMortgageDetails, requiredLoanAmount, loanToValueRatio);
   }
   
   function calculateMonthlyPayment(loanAmount, annualInterestRate, loanTermMonths) {
@@ -108,6 +111,7 @@ document.addEventListener('DOMContentLoaded', () => {
                   <p>No eligible mortgages found for:</p>
                   <p>Loan amount: £${requiredLoanAmount.toLocaleString('en-GB', {maximumFractionDigits: 2})}</p>
                   <p>Loan to value ratio: ${loanToValueRatio.toFixed(1)}%</p>
+                  <p>Note: Options with negative cash in hand are filtered out</p>
                 </div>`;
       }
     } else {
