@@ -224,6 +224,20 @@ input[type="number"]:focus {
   margin-bottom: 20px;
 }
 
+.disclaimer {
+  margin-top: 30px;
+  padding: 15px;
+  background-color: #f8f9fa;
+  border-left: 4px solid #6c757d;
+  border-radius: 3px;
+  font-size: 0.9em;
+  color: #495057;
+}
+
+.disclaimer p {
+  margin: 0;
+}
+
 .highlight {
   font-weight: bold;
   color: var(--highlight-color);
